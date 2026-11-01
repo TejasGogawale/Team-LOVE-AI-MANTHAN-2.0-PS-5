@@ -1,0 +1,117 @@
+bitchat:
+  enabled: false
+  ip: 192.168.137.98
+  port: 8765
+  rate_limit_s: 5.5
+  send_keyframes: false
+  send_scene: true
+clip_writer:
+  buffer_s: 5.0
+  clips_dir: data/clips
+  enabled: true
+  fourcc: mp4v
+  fps: 30.0
+display:
+  enabled: false
+  resize_w: 960
+  show_fps: true
+  show_vram: true
+  window: ai-surveillance (Phase 4+)
+features:
+  detection: true
+  event_buffer: true
+  event_logging: true
+  face: true
+  fall_detection: true
+  fight: true
+  fire_smoke: true
+  gathering: true
+  identity_fusion: true
+  object_left: true
+  par: false
+  phone: true
+  pose: true
+  reid: true
+  relations: true
+  smoking: true
+  tracking: true
+  violence: false
+  vlm: true
+  vlm_query: true
+  vlm_verification: true
+motion_filter:
+  enabled: true
+  min_changed_pixels: 1000
+  threshold: 0.01
+output:
+  camera_id: cam_01
+  flush_interval_s: 10.0
+  json_dir: data/events_json
+  max_track_age: 150
+perf:
+  event_db_path: data/events.db
+  fps_warn_below: 20
+  keyframes_dir: data/keyframes
+  max_frames: 120
+  vram_log_every_s: 5
+  vram_log_path: benchmarks/vram_log.csv
+  vram_warn_above_gb: 5
+router:
+  stages:
+    detect:
+      enabled: true
+      every: 1
+    face:
+      enabled: true
+      every: 8
+    fight:
+      enabled: true
+      every: 3
+    fire_smoke:
+      enabled: true
+      every: 15
+    gathering:
+      enabled: true
+      every: 30
+    object_left:
+      enabled: true
+      every: 30
+    par:
+      enabled: true
+      every: 10
+    phone:
+      enabled: true
+      every: 10
+    pose:
+      enabled: true
+      every: 3
+    reid:
+      enabled: true
+      every: 15
+    relations:
+      enabled: true
+      every: 30
+    smoking:
+      enabled: true
+      every: 10
+    track:
+      enabled: true
+      every: 1
+    violence:
+      enabled: true
+      every: 3
+    vlm_ambient:
+      enabled: true
+      every: 1
+    vlm_escalated:
+      enabled: true
+      every: 1
+source:
+  fallback_index: 0
+  fps: 30.0
+  height: 720
+  loop: true
+  path: null
+  reconnect: true
+  type: esp32
+  width: 1280
