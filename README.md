@@ -32,6 +32,7 @@
    - [Quickstart 2: MARL + GNN Training & Evaluation](#quickstart-2-marl--gnn-training--evaluation)
    - [Quickstart 3: Victim Re-ID & Fusion Verification Suite](#quickstart-3-victim-re-id--fusion-verification-suite)
    - [Quickstart 4: Full 4-Drone Gazebo Harmonic Swarm & Quad-Cam GUI](#quickstart-4-full-4-drone-gazebo-harmonic-swarm--quad-cam-gui)
+   - [Quickstart 5: Aerial Map Matching & Visual Localization](#quickstart-5-aerial-map-matching--visual-localization-web--api)
 9. [Experimental Results & Benchmarks](#experimental-results--benchmarks)
 10. [Design Principles & Honesty Commitments](#design-principles--honesty-commitments)
 11. [Authors & Acknowledgments](#authors--acknowledgments)
@@ -64,6 +65,7 @@ The system solves three fundamental challenges of disaster search-and-rescue:
 | **De-duplication / Re-ID** | Raycasting 3D lift + ByteTrack + CRDT Union-Find registry with hysteresis linking | `sim/reid.py`, `drone_agent/victim_fusion.py` (29 tests pass) |
 | **End-to-End System** | Complete stack: ROS 2 Jazzy, PX4 SITL, Gazebo Harmonic, Quad-Cam GUI, and pure-Python sim | `start_all.sh`, `drone_agent/map_gui_node.py` |
 | **Scalability & Fallback** | Pure-Python sim scales to 10+ agents; GNN falls back to geometric frontier heuristic on failure | `sim/run_baselines.py`, `drone_agent/swarm_gnn_allocator.py` |
+| **Visual Geo-Localization** | SIFT/FLANN/RANSAC geometric verification + DINOv2 visual transformer embeddings matching aerial crops against geo-referenced satellite tiles (Indore AI MANTHAN testbed) | `map_matching/` (REST API, Web UI, Render blueprint) |
 
 ---
 
@@ -235,6 +237,18 @@ Team-LOVE-AI-MANTHAN-2.0-PS-5/
 │       │   └── setup.py
 │       └── px4_msgs/              # PX4 ROS 2 message definitions (v1.14/v1.15)
 │
+├── map_matching/                  # Aerial Map Patch Matching & GPS-Denied Visual Localization
+│   ├── app.py                     # Flask REST API + Web interface for patch queries
+│   ├── localization.py            # SIFT/FLANN/RANSAC geometric matching & homography warp
+│   ├── dino_index.py              # DINOv2 visual transformer multi-rotation FAISS retrieval
+│   ├── evaluate.py                # Synthetic query evaluation & corner error benchmark
+│   ├── test_api.py                # REST API test suite (11 unit tests)
+│   ├── test_webhook.py            # Mesh gateway / Indradhanu webhook notification tests
+│   ├── render.yaml                # Render cloud deployment blueprint
+│   ├── templates/                 # Web UI dashboard
+│   ├── results/                   # Evaluation results & visualizations
+│   └── VIT_IMAGES/                # Geo-referenced satellite reference imagery (Indore testbed)
+│
 └── dashboard/                     # Web-based Fleet Telemetry Dashboard
     └── app.py                     # Streamlit / Web monitoring interface
 ```
@@ -334,6 +348,40 @@ bash start_all.sh
 - `[UAV-1 CAM]` .. `[UAV-4 CAM]`: Enlarges the corresponding drone's live feed.
 - Click directly on any video feed to maximize that camera stream.
 - Switch to **Page 2** for the 3D Collaborative OctoMap view.
+
+---
+
+### Quickstart 5: Aerial Map Matching & Visual Localization (Web & API)
+For absolute visual positioning in GPS-denied environments without accumulating drift, the `map_matching/` module provides high-confidence geometric localization against geo-referenced aerial and satellite imagery (pre-configured with the Indore AI MANTHAN testbed):
+
+```bash
+# 1. Navigate to the map_matching directory
+cd map_matching
+
+# 2. Install dependencies
+pip install -r requirements.txt
+
+# 3. Run automated unit tests (API and webhook notifications)
+python -m unittest test_api.py test_webhook.py
+
+# 4. Launch the local Flask server & interactive web interface
+python app.py
+# Open http://127.0.0.1:5000 in your browser to test interactive patch uploads or random crops
+
+# 5. (Optional) Run synthetic retrieval & localization evaluation benchmark
+python evaluate.py
+
+# 6. (Optional) Enable DINOv2 vision transformer multi-rotation FAISS retrieval
+pip install -r requirements-dino.txt
+export USE_DINO=1
+python app.py
+```
+
+**Key Features:**
+- **Zero-Drift Geo-Localization:** RANSAC homography estimation with median reprojection error metric and pixel-to-coordinate mapping.
+- **REST API (`/api/v1/localize`):** Multipart image upload endpoint with JSON response containing polygon bounding boxes and base64 aligned visual crops.
+- **Mesh Gateway Webhook:** Real-time localization event forwarding to Indradhanu command center via configurable webhook headers.
+- **Production-Ready Deployment:** Includes `render.yaml` blueprint with health check endpoints (`/health`, `/api/v1/health`) for cloud or edge deployment.
 
 ---
 
